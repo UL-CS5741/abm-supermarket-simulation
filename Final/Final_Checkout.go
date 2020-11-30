@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	currentTime              time.Time
+	currentTimeForUtilization              time.Time
 	totalCheckouts           int = 4
 	checkoutLessThan5        int = 0
 	totalCustomers           int
@@ -121,7 +121,7 @@ func (c *Checkout) doCheckout(wg *sync.WaitGroup) {
 			totalCustomersCheckedOut++
 			c.customersProcessed++
 			fmt.Printf("--------------------Checkout %v : Customer %2v checked out\tItems Processed : %2v \tWait time: %5.2f second(s)\n", c.checkoutId, customerId, customers[customerId].noOfProducts, c.accumulatedWaitTime)
-			c.totalRunningTime = time.Since(currentTime).Seconds()
+			c.totalRunningTime = time.Since(currentTimeForUtilization).Seconds()
 
 			checkoutLock.Unlock()
 			wg.Done()
@@ -242,7 +242,7 @@ func (c *Customer) AddCustomersToQueue(checkouts []*Checkout, wg *sync.WaitGroup
 //Print Results
 func checkAndPrint(checkouts []*Checkout) {
 
-	totalSimulationTime := time.Since(currentTime).Seconds()
+	totalSimulationTime := time.Since(currentTimeForUtilization).Seconds()
 
 	var avgUtilization float64
 	var totalUtilization float64
@@ -290,6 +290,7 @@ func main() {
 	InputNumberOfCheckoutsAndConstumers()
 
 	currentTime := time.Now().UnixNano()
+	currentTimeForUtilization = time.Now()
 	var wg sync.WaitGroup
 
 	//Weather agent - helps in deciding the customer arrival rate
