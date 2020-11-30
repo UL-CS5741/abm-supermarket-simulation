@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	currentTimeForUtilization              time.Time
+	currentTime              time.Time
 	totalCheckouts           int = 4
 	checkoutLessThan5        int = 0
 	totalCustomers           int
-	r                        = rand.New(rand.NewSource(time.Now().UnixNano()))
+	r                        = rand.New(rand.NewSource(time.Now().Unix()))
 	customers                []*Customer
 	randomWeather            Weather
 	totalWaitingTime         float64
@@ -67,7 +67,7 @@ func (w *Weather) changeWeather() {
 	for {
 		time.Sleep(time.Millisecond * 100)
 
-		time := time.Now().UnixNano()
+		time := time.Now().Unix()
 		gap := time - w.BeginTime
 		// change the weatherEffect
 		if gap%(3*1e10) > 2*1e10 {
@@ -97,7 +97,7 @@ func (c *Checkout) addCustomer(inVal int) {
 
 //Assign Current Time
 func (c *Checkout) setBeginTime() {
-	time := time.Now().UnixNano()
+	time := time.Now().Unix()
 	c.BeginTime = time
 }
 
@@ -121,7 +121,7 @@ func (c *Checkout) doCheckout(wg *sync.WaitGroup) {
 			totalCustomersCheckedOut++
 			c.customersProcessed++
 			fmt.Printf("--------------------Checkout %v : Customer %2v checked out\tItems Processed : %2v \tWait time: %5.2f second(s)\n", c.checkoutId, customerId, customers[customerId].noOfProducts, c.accumulatedWaitTime)
-			c.totalRunningTime = time.Since(currentTimeForUtilization).Seconds()
+			c.totalRunningTime = time.Since(currentTime).Seconds()
 
 			checkoutLock.Unlock()
 			wg.Done()
@@ -137,7 +137,7 @@ func (c *Customer) setWaitTime() {
 
 //setBeginTime function sets the current time as the customers BeginTime
 func (c *Customer) setBeginTime() {
-	time := time.Now().UnixNano()
+	time := time.Now().Unix()
 	c.BeginTime = time
 }
 
@@ -242,7 +242,7 @@ func (c *Customer) AddCustomersToQueue(checkouts []*Checkout, wg *sync.WaitGroup
 //Print Results
 func checkAndPrint(checkouts []*Checkout) {
 
-	totalSimulationTime := time.Since(currentTimeForUtilization).Seconds()
+	totalSimulationTime := time.Since(currentTime).Seconds()
 
 	var avgUtilization float64
 	var totalUtilization float64
@@ -289,12 +289,12 @@ func main() {
 	//Read No of checkouts, no of expressCheckouts, No of Customers
 	InputNumberOfCheckoutsAndConstumers()
 
-	currentTime := time.Now().UnixNano()
-	currentTimeForUtilization = time.Now()
+	currentTime = time.Now()
 	var wg sync.WaitGroup
 
 	//Weather agent - helps in deciding the customer arrival rate
-	randomWeather = Weather{BeginTime: currentTime, weatherEffect: 1}
+	now:=time.Now().Unix()
+	randomWeather = Weather{BeginTime: now, weatherEffect: 1}
 	go randomWeather.changeWeather()
 
 	//Process Checkouts
